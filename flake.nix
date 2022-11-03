@@ -19,10 +19,20 @@
         };
 
       in rec {
-        packages = {
+        packages = rec {
+          # nix build .#packages.x86_64-linux.goldvalley
+          # nix build .#goldvalley
           goldvalley = (rustPkgs.workspace.goldvalley {}).bin;
+          # nix build
+          default = goldvalley;
         };
-        defaultPackage = packages.goldvalley;
+        apps = rec {
+          # nix run .#goldvalley
+          goldvalley = { type = "app"; program = "${packages.default}/bin/goldvalley"; };
+          # nix run
+          # nix run github:hedroed/goldvalley
+          default = goldvalley;
+        };
       }
     );
 }
