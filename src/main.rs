@@ -1,6 +1,5 @@
-#![allow(dead_code)]
+#![allow(clippy::redundant_static_lifetimes)]
 
-use chrono::Duration;
 use std::path::PathBuf;
 use chrono::Utc;
 use clap::Parser;
@@ -32,43 +31,26 @@ struct Args {
    /// Path for the output image
    #[arg(short, long, value_name = "FILE")]
    output: PathBuf,
+
+   /// Force sun angle (overwrite lat, lon, alt)
+   #[arg(long)]
+   angle: Option<usize>,
 }
 
 
 pub mod render;
+pub mod angle;
+
 
 fn main() {
     let args = Args::parse();
 
-
-    let now = Utc::now();
-    println!("Now {}", now.date());
-    let (sunrise, sunset) = sun_times::sun_times(now.date() - Duration::days(1), args.lat, args.lon, args.alt);
-    println!("Sunrise: {}, Sunset: {}", sunrise, sunset);
-
-    let delta_day = sunset - sunrise;
-
-    let angle = if now < sunrise {
-        let max_time = now.timestamp() % (3600*24);
-        let cur_time = sunrise.timestamp() % (3600*24);
-
-        cur_time * 90 / max_time
-
-    } else if now > sunset {
-        let sunset_day = sunset.timestamp() % (3600*24);
-
-        let max_time = 3600*24 - sunset_day;
-        let cur_time = now.timestamp() % (3600*24) - sunset_day;
-
-        270 + (cur_time * 90 / max_time)
-
+    let angle = if let Some(angle) = args.angle {
+        angle
     } else {
-        let a = (now - sunrise).num_seconds() / delta_day.num_seconds();
-
-        90 + (a * 180)
+        let now = Utc::now();
+        angle::sun_angle(now, args.lat, args.lon, args.alt).try_into().unwrap()
     };
-
-    println!("Angle {}", angle);
 
     let image = render::render(angle as usize);
 

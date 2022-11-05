@@ -1,4 +1,4 @@
-use palette::{Gradient, Srgba, Alpha, rgb::Rgb, LinSrgb, LinSrgba};
+use palette::{Alpha, rgb::Rgb, LinSrgb, LinSrgba};
 use palette::Blend;
 
 fn main() {

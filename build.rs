@@ -141,7 +141,7 @@ fn main() {
             let id = path.id.clone();
             let transform = path.transform;
             let path_data = &path.data.0;
-            let d: Vec<PathSegment> = path_data.iter().map(|e| PathSegment::from(e)).collect();
+            let d: Vec<PathSegment> = path_data.iter().map(PathSegment::from).collect();
 
             landscape_vec.push(LandPath {
                 d,
@@ -165,7 +165,7 @@ fn main() {
         match &*node_intern {
             usvg::NodeKind::Path(path) => {
                 let path_data = &path.data.0;
-                let d: Vec<PathSegment> = path_data.iter().map(|e| PathSegment::from(e)).collect();
+                let d: Vec<PathSegment> = path_data.iter().map(PathSegment::from).collect();
 
                 let fill = if let usvg::Paint::Color(c) = path.fill.as_ref().unwrap().paint {
                     Color {
@@ -195,7 +195,7 @@ fn main() {
 
                 if let usvg::NodeKind::Path(path) = &*n_intern {
                     let path_data = &path.data.0;
-                    let d: Vec<PathSegment> = path_data.iter().map(|e| PathSegment::from(e)).collect();
+                    let d: Vec<PathSegment> = path_data.iter().map(PathSegment::from).collect();
 
                     let fill = if let usvg::Paint::Color(c) = path.fill.as_ref().unwrap().paint {
                         Color {
