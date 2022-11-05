@@ -21,11 +21,11 @@ struct Args {
    alt: f64,
 
    /// Output size width in pixels
-   #[arg(short, long, default_value_t=1920)]
+   #[arg(long, default_value_t=1920)]
    width: u32,
 
    /// Output size height in pixels
-   #[arg(short, long, default_value_t=1080)]
+   #[arg(long, default_value_t=1080)]
    height: u32,
 
    /// Path for the output image
