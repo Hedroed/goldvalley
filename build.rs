@@ -1,12 +1,11 @@
 // build.rs
 
 use const_gen::*;
-use std::{env, fs, path::Path};
 use std::str::FromStr;
+use std::{env, fs, path::Path};
 use yaml_rust::YamlLoader;
 
-use builder::colors::{Color, load_colors};
-
+use builder::colors::{load_colors, Color};
 
 #[derive(CompileConst)]
 pub struct SunPath {
@@ -15,14 +14,12 @@ pub struct SunPath {
     fill: Color,
 }
 
-
 #[derive(CompileConst)]
 pub struct LandPath {
     d: Vec<PathSegment>,
     id: String,
-    transform: Transform
+    transform: Transform,
 }
-
 
 #[derive(CompileConst)]
 pub struct Transform {
@@ -46,7 +43,6 @@ impl From<usvg::Transform> for Transform {
         }
     }
 }
-
 
 #[derive(CompileConst)]
 pub enum PathSegment {
@@ -74,27 +70,66 @@ impl From<&usvg::PathSegment> for PathSegment {
         match segment {
             usvg::PathSegment::MoveTo { x, y } => PathSegment::MoveTo { x: *x, y: *y },
             usvg::PathSegment::LineTo { x, y } => PathSegment::LineTo { x: *x, y: *y },
-            usvg::PathSegment::CurveTo { x1, y1, x2, y2, x, y } => PathSegment::CurveTo { x1: *x1, y1: *y1, x2: *x2, y2: *y2, x: *x, y: *y },
+            usvg::PathSegment::CurveTo {
+                x1,
+                y1,
+                x2,
+                y2,
+                x,
+                y,
+            } => PathSegment::CurveTo {
+                x1: *x1,
+                y1: *y1,
+                x2: *x2,
+                y2: *y2,
+                x: *x,
+                y: *y,
+            },
             usvg::PathSegment::ClosePath => PathSegment::ClosePath,
         }
     }
 }
-
 
 fn circle_to_path(cx: f64, cy: f64, r: f64) -> [PathSegment; 6] {
     let h = r / 2.0;
 
     [
         PathSegment::MoveTo { x: cx + r, y: cy },
-        PathSegment::CurveTo { x1: cx + r, y1: cy + h, x2: cx + h, y2: cy + r, x: cx,     y: cy + r},
-        PathSegment::CurveTo { x1: cx - h, y1: cy + r, x2: cx - r, y2: cy + h, x: cx - r, y: cy},
-        PathSegment::CurveTo { x1: cx - r, y1: cy - h, x2: cx - h, y2: cy - r, x: cx,     y: cy - r},
-        PathSegment::CurveTo { x1: cx + h, y1: cy - r, x2: cx + r, y2: cy - h, x: cx + r, y: cy},
+        PathSegment::CurveTo {
+            x1: cx + r,
+            y1: cy + h,
+            x2: cx + h,
+            y2: cy + r,
+            x: cx,
+            y: cy + r,
+        },
+        PathSegment::CurveTo {
+            x1: cx - h,
+            y1: cy + r,
+            x2: cx - r,
+            y2: cy + h,
+            x: cx - r,
+            y: cy,
+        },
+        PathSegment::CurveTo {
+            x1: cx - r,
+            y1: cy - h,
+            x2: cx - h,
+            y2: cy - r,
+            x: cx,
+            y: cy - r,
+        },
+        PathSegment::CurveTo {
+            x1: cx + h,
+            y1: cy - r,
+            x2: cx + r,
+            y2: cy - h,
+            x: cx + r,
+            y: cy,
+        },
         PathSegment::ClosePath,
     ]
 }
-
-
 
 fn main() {
     // Use the OUT_DIR environment variable to get an
@@ -125,7 +160,6 @@ fn main() {
         );
         star_vec.push(star);
     }
-
 
     // landscape
     let mut landscape_vec: Vec<LandPath> = Vec::new();
@@ -174,11 +208,7 @@ fn main() {
                         b: c.blue,
                     }
                 } else {
-                    Color {
-                        r: 0,
-                        g: 0,
-                        b: 0,
-                    }
+                    Color { r: 0, g: 0, b: 0 }
                 };
 
                 sun_vec.push(SunPath {
@@ -186,7 +216,7 @@ fn main() {
                     fill,
                     opacity: None,
                 });
-            },
+            }
             usvg::NodeKind::Group(group) => {
                 let opacity = group.opacity.value();
 
@@ -204,11 +234,7 @@ fn main() {
                             b: c.blue,
                         }
                     } else {
-                        Color {
-                            r: 0,
-                            g: 0,
-                            b: 0,
-                        }
+                        Color { r: 0, g: 0, b: 0 }
                     };
 
                     sun_vec.push(SunPath {
@@ -221,7 +247,6 @@ fn main() {
             _ => {}
         }
     }
-
 
     // colors
 
@@ -245,21 +270,18 @@ fn main() {
     let layer10: Vec<Color> = load_colors(&gradient_names["layer10"]);
     let layer11: Vec<Color> = load_colors(&gradient_names["layer11"]);
 
-    let const_declarations = vec! {
+    let const_declarations = vec![
         const_definition!(#[derive(Debug)] pub LandPath),
         const_definition!(#[derive(Debug)] pub SunPath),
         const_definition!(#[derive(Debug)] pub Transform),
         const_definition!(#[derive(Debug)] pub PathSegment),
         const_definition!(#[derive(Debug)] pub Color),
-
         const_declaration!(STARS = star_vec),
         const_declaration!(LANDSCAPE = landscape_vec),
         const_declaration!(SUN = sun_vec),
-
         const_declaration!(SKY_ZENITH = sky_zenith),
         const_declaration!(SKY_MID = sky_mid),
         const_declaration!(SKY_HORIZON = sky_horizon),
-
         const_declaration!(COLORS_LAYER1 = layer1),
         const_declaration!(COLORS_LAYER2 = layer2),
         const_declaration!(COLORS_LAYER3 = layer3),
@@ -271,7 +293,8 @@ fn main() {
         const_declaration!(COLORS_LAYER9 = layer9),
         const_declaration!(COLORS_LAYER10 = layer10),
         const_declaration!(COLORS_LAYER11 = layer11),
-    }.join("\n");
+    ]
+    .join("\n");
 
     // Note: The `const_definition!` and `const_declaration!`
     // macros above are just simple wrappers for CompileConst

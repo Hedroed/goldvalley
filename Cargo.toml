@@ -9,8 +9,7 @@ edition = "2021"
 resvg = { version = "0.23.0", features = [], default-features = false }
 usvg = { version = "0.23.0", features = ["export"], default-features = false }
 tiny-skia = "0.6.5"
-chrono = "0.4.22"
-sun-times = "0.1.2"
+chrono = "0.4.24"
 palette = "0.6.1"
 clap = { version = "4.0.18", features = ["derive"] }
 

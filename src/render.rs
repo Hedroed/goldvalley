@@ -1,8 +1,7 @@
-use usvg::NodeExt;
 use std::rc::Rc;
+use usvg::NodeExt;
 
 include!(concat!(env!("OUT_DIR"), "/const_gen.rs"));
-
 
 struct Interpolation {
     data: Vec<f64>,
@@ -10,12 +9,10 @@ struct Interpolation {
 
 impl Interpolation {
     fn new(data: Vec<f64>) -> Self {
-        Self {
-            data
-        }
+        Self { data }
     }
 
-    fn interpolate(&self, index: f64, of: f64) -> f64{
+    fn interpolate(&self, index: f64, of: f64) -> f64 {
         let l = (self.data.len() - 1) as f64;
         let i = index * l / of;
 
@@ -33,7 +30,6 @@ impl Interpolation {
     }
 }
 
-
 fn color(offset: f64, r: u8, g: u8, b: u8) -> usvg::Stop {
     usvg::Stop {
         offset: usvg::NormalizedValue::new(offset),
@@ -42,12 +38,25 @@ fn color(offset: f64, r: u8, g: u8, b: u8) -> usvg::Stop {
     }
 }
 
-
 fn to_svg_segment(seg: &PathSegment) -> usvg::PathSegment {
     match *seg {
         PathSegment::MoveTo { x, y } => usvg::PathSegment::MoveTo { x, y },
         PathSegment::LineTo { x, y } => usvg::PathSegment::LineTo { x, y },
-        PathSegment::CurveTo { x1, y1, x2, y2, x, y } => usvg::PathSegment::CurveTo { x1, y1, x2, y2, x, y },
+        PathSegment::CurveTo {
+            x1,
+            y1,
+            x2,
+            y2,
+            x,
+            y,
+        } => usvg::PathSegment::CurveTo {
+            x1,
+            y1,
+            x2,
+            y2,
+            x,
+            y,
+        },
         PathSegment::ClosePath => usvg::PathSegment::ClosePath,
     }
 }
@@ -63,31 +72,23 @@ fn to_svg_transform(transform: &Transform) -> usvg::Transform {
     }
 }
 
-
 fn convert_star(star: &[PathSegment; 6]) -> usvg::Path {
     usvg::Path {
         id: String::default(),
         transform: usvg::Transform::default(),
         visibility: usvg::Visibility::Visible,
-        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(usvg::Color::new_rgb(255, 255, 255)))),
+        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(
+            usvg::Color::new_rgb(255, 255, 255),
+        ))),
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
-        data: Rc::new(usvg::PathData(
-            star.iter()
-            .map(to_svg_segment)
-            .collect()
-        )),
+        data: Rc::new(usvg::PathData(star.iter().map(to_svg_segment).collect())),
     }
 }
 
-
 fn sun_node(sun: &SunPath, angle: usize) -> usvg::Node {
-    let mut path = usvg::PathData(
-        sun.d.iter()
-        .map(to_svg_segment)
-        .collect()
-    );
+    let mut path = usvg::PathData(sun.d.iter().map(to_svg_segment).collect());
 
     let angle = angle as f64;
 
@@ -113,7 +114,9 @@ fn sun_node(sun: &SunPath, angle: usize) -> usvg::Node {
         id: String::default(),
         transform: usvg::Transform::default(),
         visibility: usvg::Visibility::Visible,
-        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(usvg::Color::new_rgb(sun.fill.r, sun.fill.g, sun.fill.b)))),
+        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(
+            usvg::Color::new_rgb(sun.fill.r, sun.fill.g, sun.fill.b),
+        ))),
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
@@ -122,7 +125,6 @@ fn sun_node(sun: &SunPath, angle: usize) -> usvg::Node {
 }
 
 fn convert_sun(sun: &SunPath, angle: usize) -> usvg::Node {
-
     match sun.opacity {
         Some(opacity) => {
             let mut group = usvg::Node::new(usvg::NodeKind::Group(usvg::Group {
@@ -141,12 +143,9 @@ fn convert_sun(sun: &SunPath, angle: usize) -> usvg::Node {
 
             group
         }
-        None => sun_node(sun, angle)
+        None => sun_node(sun, angle),
     }
-
-    
 }
-
 
 fn convert_landscape(land: &LandPath, angle: usize) -> usvg::Path {
     let id = land.id;
@@ -170,17 +169,15 @@ fn convert_landscape(land: &LandPath, angle: usize) -> usvg::Path {
 
     let c = &colors[angle];
 
-    let path = usvg::PathData(
-        land.d.iter()
-        .map(to_svg_segment)
-        .collect()
-    );
+    let path = usvg::PathData(land.d.iter().map(to_svg_segment).collect());
 
     usvg::Path {
         id: String::default(),
         transform: to_svg_transform(&land.transform),
         visibility: usvg::Visibility::Visible,
-        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(usvg::Color::new_rgb(c.r, c.g, c.b)))),
+        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(
+            usvg::Color::new_rgb(c.r, c.g, c.b),
+        ))),
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
@@ -188,9 +185,7 @@ fn convert_landscape(land: &LandPath, angle: usize) -> usvg::Path {
     }
 }
 
-
 pub fn render(angle: usize) -> usvg::Tree {
-
     let svg = usvg::Svg {
         size: usvg::Size::new(1600.0, 900.0).unwrap(),
         view_box: usvg::ViewBox {
@@ -206,8 +201,14 @@ pub fn render(angle: usize) -> usvg::Tree {
     let c2 = &SKY_MID[angle];
     let c3 = &SKY_HORIZON[angle];
 
-    let inter1 = Interpolation::new(vec![0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.12,0.21,0.21,0.07,0.07,0.0,0.0,0.0,0.0]);
-    let inter2 = Interpolation::new(vec![0.66,0.62,0.52,0.52,0.52,0.52,0.58,0.66,0.69,0.55,0.57,0.77,0.78,0.78,0.74,0.74,0.74,0.74,0.55,0.56,0.58,0.58,0.58,0.58,0.58,0.68]);
+    let inter1 = Interpolation::new(vec![
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.12, 0.21,
+        0.21, 0.07, 0.07, 0.0, 0.0, 0.0, 0.0,
+    ]);
+    let inter2 = Interpolation::new(vec![
+        0.66, 0.62, 0.52, 0.52, 0.52, 0.52, 0.58, 0.66, 0.69, 0.55, 0.57, 0.77, 0.78, 0.78, 0.74,
+        0.74, 0.74, 0.74, 0.55, 0.56, 0.58, 0.58, 0.58, 0.58, 0.58, 0.68,
+    ]);
 
     let gradient = usvg::BaseGradient {
         units: usvg::Units::UserSpaceOnUse,
@@ -217,7 +218,7 @@ pub fn render(angle: usize) -> usvg::Tree {
             color(inter1.interpolate(angle as f64, 360.0), c1.r, c1.g, c1.b),
             color(inter2.interpolate(angle as f64, 360.0), c2.r, c2.g, c2.b),
             color(1.0, c3.r, c3.g, c3.b),
-        ]
+        ],
     };
 
     let sky_gradient = usvg::LinearGradient {
@@ -254,8 +255,8 @@ pub fn render(angle: usize) -> usvg::Tree {
                 offset: usvg::NormalizedValue::new(1.0),
                 color: usvg::Color::new_rgb(0, 14, 39),
                 opacity: usvg::NormalizedValue::new(0.3),
-            }
-        ]
+            },
+        ],
     };
 
     let vignette_gradient = usvg::RadialGradient {
@@ -281,7 +282,9 @@ pub fn render(angle: usize) -> usvg::Tree {
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
-        data: Rc::new(usvg::PathData::from_rect(usvg::Rect::new(0.0, 0.0, 1600.0, 540.0).unwrap())),
+        data: Rc::new(usvg::PathData::from_rect(
+            usvg::Rect::new(0.0, 0.0, 1600.0, 540.0).unwrap(),
+        )),
     };
     root.append_kind(usvg::NodeKind::Path(sky));
 
@@ -293,7 +296,9 @@ pub fn render(angle: usize) -> usvg::Tree {
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
-        data: Rc::new(usvg::PathData::from_rect(usvg::Rect::new(0.0, 540.0, 1600.0, 360.0).unwrap())),
+        data: Rc::new(usvg::PathData::from_rect(
+            usvg::Rect::new(0.0, 540.0, 1600.0, 360.0).unwrap(),
+        )),
     };
     root.append_kind(usvg::NodeKind::Path(reflection));
 
@@ -312,7 +317,6 @@ pub fn render(angle: usize) -> usvg::Tree {
         }
     }
 
-
     for land in LANDSCAPE {
         let elem = convert_landscape(land, angle);
         root.append_kind(usvg::NodeKind::Path(elem));
@@ -324,11 +328,15 @@ pub fn render(angle: usize) -> usvg::Tree {
         id: String::default(),
         transform: usvg::Transform::default(),
         visibility: usvg::Visibility::Visible,
-        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(usvg::Color::new_rgb(bottom_color.r, bottom_color.g, bottom_color.b)))),
+        fill: Some(usvg::Fill::from_paint(usvg::Paint::Color(
+            usvg::Color::new_rgb(bottom_color.r, bottom_color.g, bottom_color.b),
+        ))),
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
-        data: Rc::new(usvg::PathData::from_rect(usvg::Rect::new(0.0, 714.0, 1600.0, 186.0).unwrap())),
+        data: Rc::new(usvg::PathData::from_rect(
+            usvg::Rect::new(0.0, 714.0, 1600.0, 186.0).unwrap(),
+        )),
     };
     root.append_kind(usvg::NodeKind::Path(bottom));
 
@@ -340,7 +348,9 @@ pub fn render(angle: usize) -> usvg::Tree {
         stroke: None,
         rendering_mode: usvg::ShapeRendering::GeometricPrecision,
         text_bbox: None,
-        data: Rc::new(usvg::PathData::from_rect(usvg::Rect::new(0.0, 0.0, 1600.0, 900.0).unwrap())),
+        data: Rc::new(usvg::PathData::from_rect(
+            usvg::Rect::new(0.0, 0.0, 1600.0, 900.0).unwrap(),
+        )),
     };
     root.append_kind(usvg::NodeKind::Path(vignette));
 

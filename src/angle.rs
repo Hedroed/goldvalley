@@ -1,24 +1,21 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, NaiveDateTime};
 
+use crate::sunrise;
 
 pub type Angle = i64;
 
-
-pub fn sun_angle(date: DateTime<Utc>, latitude: f64, longitude: f64, elevation: f64) -> Angle {
-
-    let (sunrise, sunset) = sun_times::sun_times(date.date() - Duration::days(1), latitude, longitude, elevation);
+pub fn sun_angle(date: NaiveDateTime, latitude: f64, longitude: f64, elevation: f64) -> Angle {
+    let (sunrise, sunset) = sunrise::sun_times(date.date(), latitude, longitude, elevation);
     println!("Sunrise: {}, Sunset: {}", sunrise, sunset);
 
     let angle = if date < sunrise {
-        println!("case 1");
+        println!("morning");
         get_angle(date, sunset - Duration::days(1), sunrise) - 90
-
     } else if date > sunset {
-        println!("case 2");
+        println!("night");
         (270 + get_angle(date, sunset, sunrise + Duration::days(1))) % 360
-
     } else {
-        println!("case 3");
+        println!("day");
         90 + get_angle(date, sunrise, sunset)
     };
 
@@ -27,9 +24,7 @@ pub fn sun_angle(date: DateTime<Utc>, latitude: f64, longitude: f64, elevation: 
     angle
 }
 
-
-fn get_angle(now: DateTime<Utc>, min_date: DateTime<Utc>, max_date: DateTime<Utc>) -> Angle {
-
+fn get_angle(now: NaiveDateTime, min_date: NaiveDateTime, max_date: NaiveDateTime) -> Angle {
     let delta_day: f64 = (max_date - min_date).num_seconds() as f64;
 
     let offset: f64 = (now - min_date).num_seconds() as f64;
@@ -41,8 +36,8 @@ fn get_angle(now: DateTime<Utc>, min_date: DateTime<Utc>, max_date: DateTime<Utc
 
 #[cfg(test)]
 mod tests {
-    use chrono::Utc;
     use chrono::TimeZone;
+    use chrono::Utc;
 
     const NYC_LAT: f64 = 40.7128;
     const NYC_LON: f64 = 74.0060;
@@ -50,49 +45,46 @@ mod tests {
     const PARIS_LAT: f64 = 48.864716;
     const PARIS_LON: f64 = 2.349014;
 
-
     #[test]
     fn test_get_angle() {
-
-        let d = Utc.ymd(2022, 1, 1).and_hms(12, 0, 0);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 1, 1, 12, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 181);
 
-        let d = Utc.ymd(2022, 1, 1).and_hms(0, 0, 1);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 1).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 1);
 
-        let d = Utc.ymd(2022, 1, 1).and_hms(23, 59, 59);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 1, 1, 23, 59, 59).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 1);
 
-        let d = Utc.ymd(2022, 1, 1).and_hms(23, 0, 0);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 1, 1, 23, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 349);
 
-        let d = Utc.ymd(2022, 11, 1).and_hms(13, 0, 0);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 11, 1, 13, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 205);
 
-        let d = Utc.ymd(2022, 11, 1).and_hms(23, 0, 0);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 11, 1, 23, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 352);
 
-        let d = Utc.ymd(2022, 8, 1).and_hms(13, 0, 0);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 8, 1, 13, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 192);
 
-        let d = Utc.ymd(2022, 8, 1).and_hms(2, 0, 0);
-        let a = super::sun_angle(d, PARIS_LAT, PARIS_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 8, 1, 2, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
         assert_eq!(a, 41);
 
-        let d = Utc.ymd(2022, 8, 1).and_hms(13, 0, 0);
-        let a = super::sun_angle(d, NYC_LAT, NYC_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 8, 1, 13, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), NYC_LAT, NYC_LON, 1.0);
         assert_eq!(a, 252);
 
-        let d = Utc.ymd(2022, 8, 1).and_hms(2, 0, 0);
-        let a = super::sun_angle(d, NYC_LAT, NYC_LON, 1.0);
+        let d = Utc.with_ymd_and_hms(2022, 8, 1, 2, 0, 0).unwrap();
+        let a = super::sun_angle(d.naive_utc(), NYC_LAT, NYC_LON, 1.0);
         assert_eq!(a, 114);
-
     }
 }
