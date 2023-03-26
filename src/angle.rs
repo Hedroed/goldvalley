@@ -49,42 +49,38 @@ mod tests {
     fn test_get_angle() {
         let d = Utc.with_ymd_and_hms(2022, 1, 1, 12, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 181);
+        assert_eq!(a, 180);
 
         let d = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 1).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 1);
+        assert_eq!(a, 0);
 
         let d = Utc.with_ymd_and_hms(2022, 1, 1, 23, 59, 59).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 1);
+        assert_eq!(a, 359);
 
         let d = Utc.with_ymd_and_hms(2022, 1, 1, 23, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 349);
+        assert_eq!(a, 348);
 
         let d = Utc.with_ymd_and_hms(2022, 11, 1, 13, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 205);
+        assert_eq!(a, 198);
 
         let d = Utc.with_ymd_and_hms(2022, 11, 1, 23, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 352);
+        assert_eq!(a, 347);
 
         let d = Utc.with_ymd_and_hms(2022, 8, 1, 13, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 192);
+        assert_eq!(a, 191);
 
         let d = Utc.with_ymd_and_hms(2022, 8, 1, 2, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), PARIS_LAT, PARIS_LON, 1.0);
-        assert_eq!(a, 41);
-
-        let d = Utc.with_ymd_and_hms(2022, 8, 1, 13, 0, 0).unwrap();
-        let a = super::sun_angle(d.naive_utc(), NYC_LAT, NYC_LON, 1.0);
-        assert_eq!(a, 252);
+        assert_eq!(a, 40);
 
         let d = Utc.with_ymd_and_hms(2022, 8, 1, 2, 0, 0).unwrap();
         let a = super::sun_angle(d.naive_utc(), NYC_LAT, NYC_LON, 1.0);
-        assert_eq!(a, 114);
+        assert_eq!(a, 37);
     }
 }

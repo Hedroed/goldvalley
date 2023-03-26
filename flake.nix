@@ -1,28 +1,34 @@
 {
   inputs = {
-    cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.11.0";
-    flake-utils.follows = "cargo2nix/flake-utils";
-    nixpkgs.follows = "cargo2nix/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = {nixpkgs, flake-utils, cargo2nix, ...}:
+  outputs = {nixpkgs, flake-utils, rust-overlay, ...}:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [cargo2nix.overlays.default];
-        };
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs { inherit system overlays; };
+        rustVersion = pkgs.rust-bin.stable.latest.default;
 
-        rustPkgs = pkgs.rustBuilder.makePackageSet {
-          rustVersion = "1.61.0";
-          packageFun = import ./Cargo.nix;
+        rustPlatform = pkgs.makeRustPlatform {
+          cargo = rustVersion;
+          rustc = rustVersion;
+        };
+        myRustBuild = rustPlatform.buildRustPackage {
+          pname = "goldvalley";
+          version = "1.0.0";
+          src = ./.;
+          cargoLock.lockFile = ./Cargo.lock;
         };
 
       in rec {
         packages = rec {
           # nix build .#packages.x86_64-linux.goldvalley
           # nix build .#goldvalley
-          goldvalley = (rustPkgs.workspace.goldvalley {}).bin;
+          goldvalley = myRustBuild;
+          # goldvalley = (rustPkgs.workspace.goldvalley {}).bin;
           # nix build
           default = goldvalley;
         };
